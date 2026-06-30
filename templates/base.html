@@ -23,10 +23,15 @@
   <nav class="navbar navbar-{{ session.get('role', 'user') }}">
     <a href="{{ url_for('index') }}" class="navbar-brand">
       <span style="font-size: 1.8rem;">🏆</span>
-      <span>IFPI Sports</span>
+      <span class="brand-text">IFPI Sports</span>
     </a>
 
-    <div class="navbar-nav">
+    <!-- Botão Menu Mobile -->
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <span style="font-size: 1.5rem;">☰</span>
+    </button>
+
+    <div class="navbar-nav desktop-nav">
       <a href="{{ url_for('index') }}" class="nav-link">Página inicial</a>
       <a href="{{ url_for('equipes') }}" class="nav-link">Equipes</a>
       <a href="{{ url_for('amistosos') }}" class="nav-link">Amistosos</a>
@@ -36,7 +41,7 @@
       {% endif %}
     </div>
 
-    <div class="navbar-nav">
+    <div class="navbar-nav desktop-nav">
       {% if 'user_id' in session %}
       <div style="text-align: right; margin-right: 1rem; line-height: 1.2;">
         <div style="font-size: 0.85rem; font-weight: 700; color: var(--gray-900);">{{ session.get('username') }}</div>
@@ -48,6 +53,38 @@
       {% endif %}
     </div>
   </nav>
+    <!-- Menu Mobile Lateral -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+      <div class="mobile-sidebar-header">
+        <span style="font-size: 1.5rem;">🏆</span>
+        <span style="font-weight: 800;">IFPI Sports</span>
+        <button class="close-btn" onclick="toggleMobileMenu()">✕</button>
+      </div>
+      
+      {% if 'user_id' in session %}
+      <div class="mobile-user-info">
+        <div style="font-weight: 700;">{{ session.get('username') }}</div>
+        <div class="badge badge-{{ session.get('role') }}">{{ session.get('role')|upper }}</div>
+      </div>
+      {% endif %}
+
+      <div class="mobile-nav-links">
+        <a href="{{ url_for('index') }}" class="mobile-nav-link">Página inicial</a>
+        <a href="{{ url_for('equipes') }}" class="mobile-nav-link">Equipes</a>
+        <a href="{{ url_for('amistosos') }}" class="mobile-nav-link">Amistosos</a>
+        <a href="{{ url_for('campeonatos') }}" class="mobile-nav-link">Campeonatos</a>
+        {% if session.get('role') in ['admin', 'dono'] %}
+        <a href="{{ url_for('admin_usuarios') }}" class="mobile-nav-link">Gestão de Usuários</a>
+        {% endif %}
+        <hr style="border: none; border-top: 1px solid var(--gray-200); margin: 1rem 0;">
+        {% if 'user_id' in session %}
+        <a href="{{ url_for('logout') }}" class="mobile-nav-link" style="color: var(--danger);">Sair da Conta</a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="mobile-nav-link" style="color: var(--ifpi-green);">Fazer Login</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
   {% endif %}
 
   <!-- FLASH MESSAGES -->
@@ -68,5 +105,20 @@
     {% block content %}{% endblock %}
   </div>
 
+  <script>
+    function toggleMobileMenu() {
+      const sidebar = document.getElementById('mobileSidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+      
+      // Impedir scroll no body quando menu aberto
+      if (sidebar.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'auto';
+      }
+    }
+  </script>
 </body>
 </html>

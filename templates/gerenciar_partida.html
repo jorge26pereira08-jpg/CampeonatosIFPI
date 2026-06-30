@@ -11,27 +11,27 @@
   </div>
   
   <div class="card-body">
-    <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 3rem; text-align: center;">
-      <div style="flex: 1;">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🛡️</div>
-        <h3 style="font-size: 1.5rem; color: var(--dono-blue);">{{ partida.equipe1_nome }}</h3>
+    <div class="vs-container">
+      <div class="vs-team">
+        <div class="vs-icon">🛡️</div>
+        <h3 class="vs-name">{{ partida.equipe1_nome }}</h3>
         <p class="badge badge-user">Equipe 1</p>
       </div>
 
       {% if partida.equipe2_id %}
-      <div style="padding: 0 2rem;">
-        <div style="font-size: 1.2rem; font-weight: 800; color: var(--gray-300);">VS</div>
-        <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 1px;">{{ partida.fase }}</div>
+      <div class="vs-divider">
+        <div class="vs-text">VS</div>
+        <div class="vs-fase">{{ partida.fase }}</div>
       </div>
 
-      <div style="flex: 1;">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚔️</div>
-        <h3 style="font-size: 1.5rem; color: var(--dono-blue);">{{ partida.equipe2_nome }}</h3>
+      <div class="vs-team">
+        <div class="vs-icon">⚔️</div>
+        <h3 class="vs-name">{{ partida.equipe2_nome }}</h3>
         <p class="badge badge-user">Equipe 2</p>
       </div>
       {% else %}
-      <div style="flex: 1; background: var(--gray-100); padding: 2rem; border-radius: var(--radius-md); border: 2px dashed var(--gray-300);">
-        <p style="color: var(--gray-500); font-weight: 600;">Esta equipe passou direto para a próxima fase (Bye)</p>
+      <div class="vs-bye">
+        <p>Esta equipe passou direto para a próxima fase (Bye)</p>
       </div>
       {% endif %}
     </div>

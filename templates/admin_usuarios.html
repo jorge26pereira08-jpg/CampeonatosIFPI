@@ -63,7 +63,7 @@
         <!-- DONOS -->
         {% for u in donos %}
         <tr>
-          <td>
+          <td data-label="Membro">
             <div style="display: flex; align-items: center; gap: 0.8rem;">
               <div style="width: 40px; height: 40px; background: #e8eaf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">👑</div>
               <div>
@@ -72,16 +72,16 @@
               </div>
             </div>
           </td>
-          <td><span class="badge badge-dono">Dono do Sistema</span></td>
-          <td><span style="color: var(--success);">✅ Protegido</span></td>
-          <td>
+          <td data-label="Nível"><span class="badge badge-dono">Dono do Sistema</span></td>
+          <td data-label="Segurança"><span style="color: var(--success);">✅ Protegido</span></td>
+          <td data-label="Status">
             {% if u.bloqueado %}
             <span class="badge" style="background: #ffcdd2; color: #c62828;">🚫 Bloqueado</span>
             {% else %}
             <span class="badge badge-user">Ativo</span>
             {% endif %}
           </td>
-          <td style="text-align: right;">
+          <td data-label="Ações" style="text-align: right;">
             <a href="{{ url_for('admin_ver_usuario', usuario_id=u.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Gerenciar</a>
           </td>
         </tr>
@@ -90,7 +90,7 @@
         <!-- ADMINS -->
         {% for u in admins %}
         <tr>
-          <td>
+          <td data-label="Membro">
             <div style="display: flex; align-items: center; gap: 0.8rem;">
               <div style="width: 40px; height: 40px; background: var(--admin-pink-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">⭐</div>
               <div>
@@ -99,15 +99,15 @@
               </div>
             </div>
           </td>
-          <td><span class="badge badge-admin">Administrador</span></td>
-          <td>
+          <td data-label="Nível"><span class="badge badge-admin">Administrador</span></td>
+          <td data-label="Segurança">
             {% if u.pergunta_seguranca %}
             <span style="color: var(--success);">✅ Configurada</span>
             {% else %}
             <span style="color: var(--danger);">❌ Pendente</span>
             {% endif %}
           </td>
-          <td>
+          <td data-label="Status">
             {% if u.bloqueado %}
             <span class="badge" style="background: #ffcdd2; color: #c62828;">🚫 Bloqueado</span>
             {% elif u.acesso_liberado %}
@@ -116,7 +116,7 @@
             <span class="badge badge-user">Normal</span>
             {% endif %}
           </td>
-          <td style="text-align: right;">
+          <td data-label="Ações" style="text-align: right;">
             <a href="{{ url_for('admin_ver_usuario', usuario_id=u.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Gerenciar</a>
           </td>
         </tr>
@@ -125,7 +125,7 @@
         <!-- USUÁRIOS -->
         {% for u in users %}
         <tr>
-          <td>
+          <td data-label="Membro">
             <div style="display: flex; align-items: center; gap: 0.8rem;">
               <div style="width: 40px; height: 40px; background: var(--gray-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">👤</div>
               <div>
@@ -134,15 +134,15 @@
               </div>
             </div>
           </td>
-          <td><span class="badge badge-user">Usuário Comum</span></td>
-          <td>
+          <td data-label="Nível"><span class="badge badge-user">Usuário Comum</span></td>
+          <td data-label="Segurança">
             {% if u.pergunta_seguranca %}
             <span style="color: var(--success);">✅ Configurada</span>
             {% else %}
             <span style="color: var(--danger);">❌ Pendente</span>
             {% endif %}
           </td>
-          <td>
+          <td data-label="Status">
             {% if u.bloqueado %}
             <span class="badge" style="background: #ffcdd2; color: #c62828;">🚫 Bloqueado</span>
             {% elif u.acesso_liberado %}
@@ -151,7 +151,7 @@
             <span class="badge badge-user">Normal</span>
             {% endif %}
           </td>
-          <td style="text-align: right;">
+          <td data-label="Ações" style="text-align: right;">
             <a href="{{ url_for('admin_ver_usuario', usuario_id=u.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Gerenciar</a>
           </td>
         </tr>

@@ -2,15 +2,15 @@
 {% block title %}Recuperar Senha — IFPI Sports{% endblock %}
 
 {% block content %}
-<div class="auth-wrapper">
-  <div class="auth-card">
-    <div class="auth-card-header">
+<div class="auth-container">
+  <div class="auth-box">
+    <div class="auth-header">
       <div style="font-size: 3rem; margin-bottom: 1rem;">🔑</div>
       <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--gray-900);">Recuperar Acesso</h1>
       <p style="color: var(--gray-500);">Responda sua pergunta secreta para ver sua senha</p>
     </div>
 
-    <div class="auth-card-body">
+    <div>
       {% if not user_found %}
       <!-- PASSO 1: USUÁRIO -->
       <form method="POST">
@@ -48,7 +48,7 @@
       {% endif %}
     </div>
 
-    <div class="auth-card-footer">
+    <div style="margin-top: 2rem; text-align: center; border-top: 1px solid var(--gray-200); padding-top: 1.5rem;">
       Lembrou a senha? <a href="{{ url_for('login') }}" style="color: var(--success); font-weight: 700;">Voltar</a>
     </div>
   </div>

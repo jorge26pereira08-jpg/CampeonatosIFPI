@@ -34,28 +34,28 @@
 </div>
 {% endif %}
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
-  <a href="{{ url_for('equipes') }}" class="card" style="text-decoration: none; color: inherit;">
-    <div class="card-body" style="text-align: center; padding: 3rem 2rem;">
-      <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">👥</div>
-      <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--ifpi-green);">Gestão de Equipes</h3>
-      <p style="color: var(--gray-600); font-size: 0.95rem;">Crie, edite e organize os times de Futsal, Vôlei e X1.</p>
+<div class="dashboard-grid">
+  <a href="{{ url_for('equipes') }}" class="card dashboard-card">
+    <div class="card-body">
+      <div class="dashboard-icon">👥</div>
+      <h3 class="dashboard-title" style="color: var(--ifpi-green);">Gestão de Equipes</h3>
+      <p class="dashboard-text">Crie, edite e organize os times de Futsal, Vôlei e X1.</p>
     </div>
   </a>
 
-  <a href="{{ url_for('amistosos') }}" class="card" style="text-decoration: none; color: inherit;">
-    <div class="card-body" style="text-align: center; padding: 3rem 2rem;">
-      <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">⚽</div>
-      <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--info);">Amistosos</h3>
-      <p style="color: var(--gray-600); font-size: 0.95rem;">Agende partidas rápidas e desafie outras equipes do campus.</p>
+  <a href="{{ url_for('amistosos') }}" class="card dashboard-card">
+    <div class="card-body">
+      <div class="dashboard-icon">⚽</div>
+      <h3 class="dashboard-title" style="color: var(--info);">Amistosos</h3>
+      <p class="dashboard-text">Agende partidas rápidas e desafie outras equipes do campus.</p>
     </div>
   </a>
 
-  <a href="{{ url_for('campeonatos') }}" class="card" style="text-decoration: none; color: inherit;">
-    <div class="card-body" style="text-align: center; padding: 3rem 2rem;">
-      <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">🏅</div>
-      <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--warning);">Campeonatos</h3>
-      <p style="color: var(--gray-600); font-size: 0.95rem;">Participe de torneios oficiais com chaveamento automático e WO.</p>
+  <a href="{{ url_for('campeonatos') }}" class="card dashboard-card">
+    <div class="card-body">
+      <div class="dashboard-icon">🏅</div>
+      <h3 class="dashboard-title" style="color: var(--warning);">Campeonatos</h3>
+      <p class="dashboard-text">Torneios oficiais com chaveamento automático e WO.</p>
     </div>
   </a>
 </div>

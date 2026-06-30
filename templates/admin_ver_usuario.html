@@ -10,7 +10,7 @@
   
   <div class="card-body">
     <form method="POST" action="{{ url_for('admin_editar_usuario', usuario_id=usuario.id) }}">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+      <div class="form-grid-1-1">
         <div class="form-group">
           <label class="form-label">Nome de Usuário</label>
           <input type="text" name="username" class="form-control" value="{{ usuario.username }}" required>
@@ -51,7 +51,7 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+      <div class="form-grid-1-1">
         <div class="form-group">
           <label class="form-label">Pergunta de Segurança</label>
           <input type="text" name="pergunta_seguranca" class="form-control" value="{{ usuario.pergunta_seguranca or '' }}">
@@ -62,7 +62,7 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; padding: 1.5rem; background: var(--gray-50); border-radius: var(--radius-sm); border: 1px solid var(--gray-100);">
+      <div class="form-grid-1-1" style="padding: 1.5rem; background: var(--gray-50); border-radius: var(--radius-sm); border: 1px solid var(--gray-100); margin-top: 0; padding-top: 1.5rem;">
         <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
           <input type="checkbox" name="acesso_liberado" value="1" {% if usuario.acesso_liberado %}checked{% endif %} style="width: 20px; height: 20px;">
           <span class="form-label" style="margin: 0;">🔓 Liberar Acesso (Resetar bloqueio por tentativas)</span>
@@ -94,10 +94,10 @@
         </div>
       </div>
 
-      <div style="margin-top: 3rem; display: flex; gap: 1rem;">
-        <button type="submit" class="btn btn-primary" style="flex: 2; padding: 1rem;">💾 Salvar Alterações</button>
+      <div class="form-actions-responsive">
+        <button type="submit" class="btn btn-primary btn-flex-2">💾 Salvar Alterações</button>
         {% if usuario.id != session.get('user_id') and usuario.role != 'dono' %}
-        <button type="button" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);" onclick="confirmarExclusao()">🗑️ Excluir Usuário</button>
+        <button type="button" class="btn btn-outline btn-flex-1" style="color: var(--danger); border-color: var(--danger);" onclick="confirmarExclusao()">🗑️ Excluir Usuário</button>
         {% endif %}
       </div>
     </form>

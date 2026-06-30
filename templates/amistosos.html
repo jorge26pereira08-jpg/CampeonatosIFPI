@@ -132,7 +132,7 @@
 <h2 style="margin: 3rem 0 1.5rem; font-weight: 800;">📋 Partidas Agendadas</h2>
 
 {% if amistosos %}
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr)); gap: 1.5rem;">
   {% for am in amistosos %}
   <div class="card" style="{% if am.status == 'concluído' %}border-top: 4px solid var(--success);{% else %}border-top: 4px solid var(--info);{% endif %}">
     <div class="card-body">

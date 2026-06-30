@@ -4,9 +4,9 @@
 {% block content %}
 <div style="margin-bottom: 2rem;">
   <a href="{{ url_for('campeonatos') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Voltar</a>
-  <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+  <div class="header-responsive">
     <div>
-      <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900);">🏆 {{ campeonato.nome }}</h1>
+      <h1 class="title-responsive">🏆 {{ campeonato.nome }}</h1>
       <p style="color: var(--gray-500); font-size: 1.1rem;">📅 {{ campeonato.data }} às {{ campeonato.horario }} | 📍 {{ campeonato.local }}</p>
     </div>
     <span class="badge badge-{{ 'success' if campeonato.status == 'aberto' else 'user' }}" style="font-size: 1rem; padding: 0.5rem 1rem;">
@@ -15,7 +15,7 @@
   </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+<div class="grid-main-sidebar">
   
   <!-- COLUNA PRINCIPAL: CHAVEAMENTO -->
   <div>

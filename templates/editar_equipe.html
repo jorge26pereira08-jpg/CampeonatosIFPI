@@ -17,7 +17,7 @@
       </div>
 
       {% if equipe.modalidade != 'x1' %}
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <div class="form-grid-1-1">
         <div>
           <h4 style="color: var(--success); margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">🟢 Titulares</h4>
           <div id="campos-titulares" style="display: grid; gap: 0.8rem;"></div>
@@ -49,9 +49,9 @@
       </div>
       {% endif %}
 
-      <div style="margin-top: 3rem; display: flex; gap: 1rem;">
-        <button type="submit" class="btn btn-primary" style="flex: 2; padding: 1rem;">✅ Salvar Alterações</button>
-        <a href="{{ url_for('equipes') }}" class="btn btn-outline" style="flex: 1;">Cancelar</a>
+      <div class="form-actions-responsive">
+        <button type="submit" class="btn btn-primary btn-flex-2">✅ Salvar Alterações</button>
+        <a href="{{ url_for('equipes') }}" class="btn btn-outline btn-flex-1">Cancelar</a>
       </div>
     </form>
   </div>
