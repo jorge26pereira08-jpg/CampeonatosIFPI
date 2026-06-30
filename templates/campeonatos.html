@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}Campeonatos — IFPI Sports{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--gray-900);">🏆 Campeonatos</h1>
+    <p style="color: var(--gray-500);">Torneios oficiais e competições de elite</p>
+  </div>
+</div>
+
+<!-- CRIAR CAMPEONATO (ADMIN/DONO) -->
+{% if session.get('role') in ['admin', 'dono'] %}
+<div class="card">
+  <div class="card-header">
+    <h3 style="margin: 0;">➕ Abrir Novo Campeonato</h3>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1.5rem;">
+        <div class="form-group">
+          <label class="form-label">Nome do Torneio</label>
+          <input type="text" name="nome" class="form-control" placeholder="Ex: Intercampi 2024" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modalidade</label>
+          <select name="modalidade" class="form-control" required>
+            <option value="futsal">⚽ Futsal</option>
+            <option value="volei">🏐 Vôlei</option>
+            <option value="x1">🥊 X1</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nº de Equipes</label>
+          <input type="number" name="qtd_equipes" class="form-control" min="4" value="8" required>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1.5rem; margin-top: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Data de Início</label>
+          <input type="date" name="data" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horário</label>
+          <input type="time" name="horario" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Local das Partidas</label>
+          <input type="text" name="local" class="form-control" placeholder="Local do evento" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">🎯 Lançar Campeonato</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- LISTAGEM DE CAMPEONATOS -->
+<h2 style="margin: 3rem 0 1.5rem; font-weight: 800;">📋 Competições</h2>
+
+{% if campeonatos %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 2rem;">
+  {% for camp in campeonatos %}
+  <div class="card" style="{% if camp.status == 'concluído' %}border-top: 4px solid var(--warning);{% else %}border-top: 4px solid var(--success);{% endif %}">
+    <div class="card-body">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <span class="badge badge-user">{{ camp.modalidade|upper }}</span>
+        <span class="badge badge-{{ 'success' if camp.status == 'aberto' else 'user' }}">
+          {{ 'Inscrições Abertas' if camp.status == 'aberto' else 'Finalizado' }}
+        </span>
+      </div>
+
+      <h3 style="font-size: 1.4rem; margin-bottom: 1rem; color: var(--gray-900);">{{ camp.nome }}</h3>
+      
+      <div style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 1.5rem;">
+        <p>📍 {{ camp.local }}</p>
+        <p>📅 Início: {{ camp.data }} às {{ camp.horario }}</p>
+        <p>👥 Vagas: <strong>{{ camp.participantes_atuais }} / {{ camp.qtd_equipes }}</strong></p>
+      </div>
+
+      {% if camp.status == 'concluído' %}
+      <div style="background: linear-gradient(135deg, #fffde7 0%, #fff9c4 100%); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid #fbc02d; margin-bottom: 1.5rem;">
+        <p style="font-size: 0.75rem; font-weight: 800; color: #f57f17; text-transform: uppercase; margin-bottom: 0.5rem;">🏆 Pódio Final</p>
+        <p style="font-weight: 700; color: var(--gray-900);">🥇 Campeão: {{ camp.campeao_nome }}</p>
+        <p style="font-size: 0.85rem; color: var(--gray-700);">🥈 Vice: {{ camp.vice_nome }}</p>
+      </div>
+      {% elif camp.status == 'aberto' and camp.participantes_atuais < camp.qtd_equipes %}
+        {% if not camp.inscrito %}
+        <div style="padding: 1.25rem; background: var(--gray-50); border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+          <form method="POST" action="{{ url_for('inscrever_campeonato', campeonato_id=camp.id) }}">
+            <label class="form-label" style="font-size: 0.8rem;">Sua Equipe de {{ camp.modalidade|upper }}</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <select name="equipe_id" class="form-control" style="font-size: 0.85rem;" required data-modalidade="{{ camp.modalidade }}">
+                <option value="">Selecione...</option>
+              </select>
+              <button type="submit" class="btn btn-primary" style="font-size: 0.8rem;">Inscrever</button>
+            </div>
+          </form>
+        </div>
+        {% else %}
+        <div style="padding: 1rem; text-align: center; background: #e8f5e9; border-radius: var(--radius-sm); margin-bottom: 1.5rem; color: #2e7d32; font-weight: 700; font-size: 0.9rem;">
+          ✅ Equipe Inscrita
+        </div>
+        {% endif %}
+      {% endif %}
+
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="{{ url_for('detalhes_campeonato', campeonato_id=camp.id) }}" class="btn btn-primary" style="flex: 2;">Ver Tabela e Jogos</a>
+        {% if session.get('role') in ['admin', 'dono'] %}
+        <form method="POST" action="{{ url_for('cancelar_campeonato', campeonato_id=camp.id) }}" style="flex: 1;">
+          <button type="submit" class="btn btn-outline" style="width: 100%; color: var(--danger);" onclick="return confirm('Cancelar este campeonato?')">🗑️</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 4rem 2rem;">
+  <div style="font-size: 4rem; margin-bottom: 1rem;">🏆</div>
+  <h3>Nenhum campeonato aberto</h3>
+  <p style="color: var(--gray-500);">Fique atento aos próximos lançamentos do campus.</p>
+</div>
+{% endif %}
+
+<script>
+  // Carregamento assíncrono das equipes para inscrição
+  document.addEventListener('DOMContentLoaded', async () => {
+    const response = await fetch('/api/minha-equipe');
+    const minhasEquipes = await response.json();
+    
+    document.querySelectorAll('select[name="equipe_id"]').forEach(select => {
+      const modalidade = select.getAttribute('data-modalidade');
+      const filtradas = minhasEquipes.filter(e => e.modalidade === modalidade);
+      
+      if (filtradas.length === 0) {
+        select.innerHTML = '<option value="">Sem equipes compatíveis</option>';
+        select.disabled = true;
+      } else {
+        filtradas.forEach(e => {
+          select.innerHTML += `<option value="${e.id}">${e.nome}</option>`;
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}

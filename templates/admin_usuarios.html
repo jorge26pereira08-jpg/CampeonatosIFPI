@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Gestão de Usuários — IFPI Sports{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--gray-900);">⚙️ Gestão de Usuários</h1>
+    <p style="color: var(--gray-500);">Controle de acessos e permissões do sistema</p>
+  </div>
+  <a href="{{ url_for('admin_criar_usuario') }}" class="btn btn-primary">
+    <span>➕</span> Criar Novo Usuário
+  </a>
+</div>
+
+<!-- SOLICITAÇÕES -->
+{% if solicitacoes %}
+<div class="card" style="border-left: 5px solid var(--admin-pink);">
+  <div class="card-header" style="background: var(--admin-pink-light);">
+    <h4 style="color: var(--admin-pink); margin: 0;">🔔 Solicitações Pendentes ({{ solicitacoes|length }})</h4>
+  </div>
+  <div class="card-body">
+    {% for sol in solicitacoes %}
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--gray-50); border-radius: var(--radius-sm); margin-bottom: 0.5rem;">
+      <div>
+        <strong>{{ sol.username }}</strong>
+        <span style="font-size: 0.8rem; color: var(--gray-500); margin-left: 1rem;">Pedido em: {{ sol.data_solicitacao }}</span>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <form method="POST" action="{{ url_for('liberar_acesso', solicitacao_id=sol.id) }}">
+          <button type="submit" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Aprovar</button>
+        </form>
+        <form method="POST" action="{{ url_for('recusar_solicitacao', solicitacao_id=sol.id) }}">
+          <button type="submit" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Recusar</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- TABELAS DE USUÁRIOS -->
+{% set donos = usuarios | selectattr('role', 'equalto', 'dono') | list %}
+{% set admins = usuarios | selectattr('role', 'equalto', 'admin') | list %}
+{% set users = usuarios | selectattr('role', 'equalto', 'user') | list %}
+
+<div class="card">
+  <div class="card-header">
+    <h3 style="margin: 0;">👥 Lista de Membros</h3>
+  </div>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Membro</th>
+          <th>Nível de Acesso</th>
+          <th>Segurança</th>
+          <th>Status</th>
+          <th style="text-align: right;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- DONOS -->
+        {% for u in donos %}
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <div style="width: 40px; height: 40px; background: #e8eaf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">👑</div>
+              <div>
+                <div style="font-weight: 700;">{{ u.username }}</div>
+                <div style="font-size: 0.75rem; color: var(--gray-500);">ID #{{ u.id }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-dono">Dono do Sistema</span></td>
+          <td><span style="color: var(--success);">✅ Protegido</span></td>
+          <td>
+            {% if u.bloqueado %}
+            <span class="badge" style="background: #ffcdd2; color: #c62828;">🚫 Bloqueado</span>
+            {% else %}
+            <span class="badge badge-user">Ativo</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <a href="{{ url_for('admin_ver_usuario', usuario_id=u.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Gerenciar</a>
+          </td>
+        </tr>
+        {% endfor %}
+
+        <!-- ADMINS -->
+        {% for u in admins %}
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <div style="width: 40px; height: 40px; background: var(--admin-pink-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">⭐</div>
+              <div>
+                <div style="font-weight: 700;">{{ u.username }}</div>
+                <div style="font-size: 0.75rem; color: var(--gray-500);">ID #{{ u.id }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-admin">Administrador</span></td>
+          <td>
+            {% if u.pergunta_seguranca %}
+            <span style="color: var(--success);">✅ Configurada</span>
+            {% else %}
+            <span style="color: var(--danger);">❌ Pendente</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.bloqueado %}
+            <span class="badge" style="background: #ffcdd2; color: #c62828;">🚫 Bloqueado</span>
+            {% elif u.acesso_liberado %}
+            <span class="badge badge-user" style="color: var(--success);">Desbloqueado</span>
+            {% else %}
+            <span class="badge badge-user">Normal</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <a href="{{ url_for('admin_ver_usuario', usuario_id=u.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Gerenciar</a>
+          </td>
+        </tr>
+        {% endfor %}
+
+        <!-- USUÁRIOS -->
+        {% for u in users %}
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <div style="width: 40px; height: 40px; background: var(--gray-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">👤</div>
+              <div>
+                <div style="font-weight: 700;">{{ u.username }}</div>
+                <div style="font-size: 0.75rem; color: var(--gray-500);">ID #{{ u.id }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-user">Usuário Comum</span></td>
+          <td>
+            {% if u.pergunta_seguranca %}
+            <span style="color: var(--success);">✅ Configurada</span>
+            {% else %}
+            <span style="color: var(--danger);">❌ Pendente</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.bloqueado %}
+            <span class="badge" style="background: #ffcdd2; color: #c62828;">🚫 Bloqueado</span>
+            {% elif u.acesso_liberado %}
+            <span class="badge badge-user" style="color: var(--success);">Desbloqueado</span>
+            {% else %}
+            <span class="badge badge-user">Normal</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <a href="{{ url_for('admin_ver_usuario', usuario_id=u.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Gerenciar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="margin-top: 2rem; color: var(--gray-500); font-size: 0.9rem; text-align: center;">
+  Exibindo {{ usuarios|length }} membros registrados no sistema.
+</div>
+{% endblock %}

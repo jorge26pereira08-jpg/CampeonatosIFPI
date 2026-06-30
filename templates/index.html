@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Página inicial — IFPI Sports{% endblock %}
+
+{% block content %}
+<div class="banner banner-{{ session.get('role', 'user') }}">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Olá, {{ session.get('username') }}! 👋</h1>
+      <p style="font-size: 1.1rem; opacity: 0.9;">Bem-vindo ao centro de comando do IFPI Sports.</p>
+    </div>
+    <div style="font-size: 4rem; opacity: 0.3;">🏆</div>
+  </div>
+</div>
+
+{% if session.get('role') == 'dono' %}
+<div class="card" style="border-left: 5px solid var(--dono-blue); background: #e8eaf6;">
+  <div class="card-body" style="display: flex; align-items: center; gap: 1.5rem;">
+    <div style="font-size: 2.5rem;">👑</div>
+    <div>
+      <h4 style="color: var(--dono-blue); margin-bottom: 0.2rem;">Acesso de Proprietário (Dono)</h4>
+      <p style="font-size: 0.9rem; color: var(--gray-700);">Você possui controle total sobre o sistema. Somente você pode nomear ou remover outros administradores.</p>
+    </div>
+  </div>
+</div>
+{% elif session.get('role') == 'admin' %}
+<div class="card" style="border-left: 5px solid var(--admin-pink); background: #fce4ec;">
+  <div class="card-body" style="display: flex; align-items: center; gap: 1.5rem;">
+    <div style="font-size: 2.5rem;">⭐</div>
+    <div>
+      <h4 style="color: var(--admin-pink-dark); margin-bottom: 0.2rem;">Painel Administrativo</h4>
+      <p style="font-size: 0.9rem; color: var(--gray-700);">Você tem permissões para gerenciar equipes, amistosos e campeonatos.</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+  <a href="{{ url_for('equipes') }}" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-body" style="text-align: center; padding: 3rem 2rem;">
+      <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">👥</div>
+      <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--ifpi-green);">Gestão de Equipes</h3>
+      <p style="color: var(--gray-600); font-size: 0.95rem;">Crie, edite e organize os times de Futsal, Vôlei e X1.</p>
+    </div>
+  </a>
+
+  <a href="{{ url_for('amistosos') }}" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-body" style="text-align: center; padding: 3rem 2rem;">
+      <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">⚽</div>
+      <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--info);">Amistosos</h3>
+      <p style="color: var(--gray-600); font-size: 0.95rem;">Agende partidas rápidas e desafie outras equipes do campus.</p>
+    </div>
+  </a>
+
+  <a href="{{ url_for('campeonatos') }}" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-body" style="text-align: center; padding: 3rem 2rem;">
+      <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">🏅</div>
+      <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--warning);">Campeonatos</h3>
+      <p style="color: var(--gray-600); font-size: 0.95rem;">Participe de torneios oficiais com chaveamento automático e WO.</p>
+    </div>
+  </a>
+</div>
+
+<div class="card" style="margin-top: 3rem; background: var(--white);">
+  <div class="card-body">
+    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem;">
+      <span>📢</span> Avisos Recentes
+    </h3>
+    <div style="padding: 1rem; border-left: 3px solid var(--ifpi-green); background: var(--gray-50); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+      <p style="font-weight: 600; margin-bottom: 0.3rem;">Sistema Atualizado (v4.0 Premium)</p>
+      <p style="font-size: 0.9rem; color: var(--gray-700);">Nova interface, sistema de WO e hierarquia de segurança implementados.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

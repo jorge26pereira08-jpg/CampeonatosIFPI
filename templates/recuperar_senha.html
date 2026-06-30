@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Recuperar Senha — IFPI Sports{% endblock %}
+
+{% block auth_content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🔑</div>
+      <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--gray-900);">Recuperar Acesso</h1>
+      <p style="color: var(--gray-500);">Responda sua pergunta secreta para ver sua senha</p>
+    </div>
+
+    <div class="auth-card-body">
+      {% if not user_found %}
+      <!-- PASSO 1: USUÁRIO -->
+      <form method="POST">
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label">👤 Nome de Usuário</label>
+          <input type="text" name="username" class="form-control" placeholder="Digite seu usuário" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">Verificar Pergunta →</button>
+      </form>
+      {% elif not senha_revelada %}
+      <!-- PASSO 2: PERGUNTA -->
+      <form method="POST">
+        <input type="hidden" name="username" value="{{ username }}">
+        <div style="padding: 1.5rem; background: var(--gray-50); border-radius: var(--radius-sm); border: 1px solid var(--gray-100); margin-bottom: 2rem;">
+          <p style="font-size: 0.75rem; font-weight: 800; color: var(--gray-400); text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 1px;">Sua Pergunta Secreta</p>
+          <p style="font-weight: 700; color: var(--gray-800); font-size: 1.1rem;">{{ pergunta }}</p>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label">Sua Resposta</label>
+          <input type="text" name="resposta_seguranca" class="form-control" placeholder="Digite a resposta exata" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">Revelar Senha ✨</button>
+      </form>
+      {% else %}
+      <!-- PASSO 3: RESULTADO -->
+      <div style="text-align: center; padding: 1rem 0;">
+        <div style="background: #e8f5e9; border: 2px solid var(--success); border-radius: var(--radius-md); padding: 2rem; margin-bottom: 2rem;">
+          <p style="font-size: 0.75rem; font-weight: 800; color: var(--success); text-transform: uppercase; margin-bottom: 1rem;">Identidade Confirmada!</p>
+          <p style="font-size: 0.85rem; color: var(--gray-500); margin-bottom: 0.5rem;">Sua senha é:</p>
+          <p style="font-size: 2rem; font-weight: 900; color: var(--gray-900); letter-spacing: 3px;">{{ senha_revelada }}</p>
+        </div>
+        <a href="{{ url_for('login') }}" class="btn btn-primary" style="width: 100%; padding: 1rem;">Ir para o Login</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="auth-card-footer">
+      Lembrou a senha? <a href="{{ url_for('login') }}" style="color: var(--success); font-weight: 700;">Voltar</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

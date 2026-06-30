@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Finalizar Campeonato — IFPI Sports{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  <div style="margin-bottom: 2rem; text-align: center;">
+    <a href="{{ url_for('detalhes_campeonato', campeonato_id=campeonato.id) }}" class="btn btn-outline" style="margin-bottom: 1.5rem;">← Voltar ao Chaveamento</a>
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900);">🏆 Finalizar Competição</h1>
+    <p style="color: var(--gray-500);">{{ campeonato.nome }} • {{ campeonato.modalidade|upper }}</p>
+  </div>
+
+  <div class="card" style="border-top: 6px solid var(--warning);">
+    <div class="card-body" style="padding: 3rem;">
+      <form method="POST">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
+          <!-- CAMPEÃO -->
+          <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #fffde7 0%, #fff9c4 100%); border-radius: var(--radius-md); border: 2px solid #fbc02d;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🥇</div>
+            <label class="form-label" style="color: #f57f17; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Campeão</label>
+            <select name="campeao_id" class="form-control" style="background: white; border-color: #fbc02d; font-weight: 700; text-align: center;" required>
+              <option value="">Selecione...</option>
+              {% for eq in equipes %}
+              <option value="{{ eq.id }}">{{ eq.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- VICE -->
+          <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); border-radius: var(--radius-md); border: 2px solid #bdbdbd;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🥈</div>
+            <label class="form-label" style="color: #616161; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Vice-Campeão</label>
+            <select name="vice_id" class="form-control" style="background: white; border-color: #bdbdbd; font-weight: 700; text-align: center;" required>
+              <option value="">Selecione...</option>
+              {% for eq in equipes %}
+              <option value="{{ eq.id }}">{{ eq.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 3rem;">
+          <label class="form-label">⚽ Artilheiro / Destaque do Torneio</label>
+          <input type="text" name="artilheiro" class="form-control" style="padding: 1.25rem;" placeholder="Nome do atleta que brilhou na competição">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <button type="submit" class="btn btn-primary" style="padding: 1.25rem; font-size: 1.1rem; font-weight: 800;">✨ Publicar Resultados e Finalizar</button>
+          <p style="text-align: center; font-size: 0.85rem; color: var(--gray-400);">
+            Esta ação é irreversível e encerrará oficialmente o torneio.
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

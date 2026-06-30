@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}Editar {{ equipe.nome }} — IFPI Sports{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <a href="{{ url_for('equipes') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Voltar</a>
+  <h1 style="font-size: 2rem; font-weight: 800; color: var(--gray-900);">✏️ Editar Equipe</h1>
+  <p style="color: var(--gray-500);">Ajustando escalação de <strong>{{ equipe.nome }}</strong> ({{ equipe.modalidade|upper }})</p>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="POST" id="formEquipe">
+      <div class="form-group" style="margin-bottom: 2rem;">
+        <label class="form-label">🏷️ Nome da Equipe</label>
+        <input type="text" name="nome" class="form-control" value="{{ equipe.nome }}" required>
+      </div>
+
+      {% if equipe.modalidade != 'x1' %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div>
+          <h4 style="color: var(--success); margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">🟢 Titulares</h4>
+          <div id="campos-titulares" style="display: grid; gap: 0.8rem;"></div>
+        </div>
+        <div>
+          <h4 style="color: var(--warning); margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">🟡 Reservas</h4>
+          <div id="campos-reservas" style="display: grid; gap: 0.8rem;"></div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 2rem; padding: 1.5rem; background: var(--gray-50); border-radius: var(--radius-sm);">
+        <label class="form-label">👨‍💼 Capitão Responsável</label>
+        <select id="capitao_id" name="capitao_id" class="form-control" required>
+          <option value="">Selecione um jogador acima</option>
+          {% for u in usuarios %}
+          <option value="{{ u.id }}" {% if u.id == equipe.capitao_id %}selected{% endif %}>{{ u.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% else %}
+      <div class="form-group">
+        <label class="form-label">🥊 Atleta X1</label>
+        <select name="titulares" class="form-control" required>
+          {% for u in usuarios %}
+          <option value="{{ u.id }}" {% if u.id == equipe.titulares[0].id %}selected{% endif %}>{{ u.username }}</option>
+          {% endfor %}
+        </select>
+        <input type="hidden" name="modalidade" value="x1">
+      </div>
+      {% endif %}
+
+      <div style="margin-top: 3rem; display: flex; gap: 1rem;">
+        <button type="submit" class="btn btn-primary" style="flex: 2; padding: 1rem;">✅ Salvar Alterações</button>
+        <a href="{{ url_for('equipes') }}" class="btn btn-outline" style="flex: 1;">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let jogadoresDisponiveis = [];
+  const modalidade = "{{ equipe.modalidade }}";
+  const idsTitulares = [{% for p in equipe.titulares %}{{ p.id }},{% endfor %}];
+  const idsReservas = [{% for p in equipe.reservas %}{{ p.id }},{% endfor %}];
+
+  async function carregarJogadores() {
+    // Na edição, precisamos dos jogadores da modalidade + os que já estão no time
+    const response = await fetch(`/equipes/jogadores-disponiveis/${modalidade}`);
+    jogadoresDisponiveis = await response.json();
+    
+    // Adicionar os jogadores atuais que podem não estar na lista de "disponíveis" (pois já estão no time)
+    const atuais = [...idsTitulares, ...idsReservas];
+    const todosUsuarios = [
+      {% for u in usuarios %}
+      { id: {{ u.id }}, username: "{{ u.username }}" },
+      {% endfor %}
+    ];
+    
+    atuais.forEach(id => {
+      if (!jogadoresDisponiveis.find(j => j.id === id)) {
+        const user = todosUsuarios.find(u => u.id === id);
+        if (user) jogadoresDisponiveis.push(user);
+      }
+    });
+
+    if (modalidade !== 'x1') {
+      const nTit = modalidade === 'futsal' ? 5 : 7;
+      const nRes = modalidade === 'futsal' ? 3 : 5;
+      gerarSelects('campos-titulares', 'titulares', nTit, true, idsTitulares);
+      gerarSelects('campos-reservas', 'reservas', nRes, false, idsReservas);
+      syncOptions();
+      syncCapitao();
+    }
+  }
+
+  function gerarSelects(containerId, name, qtd, required, atuais) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    for (let i = 1; i <= qtd; i++) {
+      const select = document.createElement('select');
+      select.name = name;
+      select.className = 'form-control';
+      if (required) select.required = true;
+      select.onchange = () => { syncOptions(); syncCapitao(); };
+      
+      const valorAtual = atuais[i-1] || "";
+      select.innerHTML = `<option value="">${required ? 'Titular' : 'Reserva'} ${i}</option>`;
+      jogadoresDisponiveis.forEach(j => {
+        const sel = j.id == valorAtual ? 'selected' : '';
+        select.innerHTML += `<option value="${j.id}" ${sel}>${j.username}</option>`;
+      });
+      container.appendChild(select);
+    }
+  }
+
+  function syncOptions() {
+    const selects = document.querySelectorAll('#formEquipe select[name="titulares"], #formEquipe select[name="reservas"]');
+    const selected = Array.from(selects).map(s => s.value).filter(v => v !== "");
+    selects.forEach(s => {
+      const val = s.value;
+      Array.from(s.options).forEach(opt => {
+        if (opt.value && opt.value !== val) opt.disabled = selected.includes(opt.value);
+      });
+    });
+  }
+
+  function syncCapitao() {
+    const selects = document.querySelectorAll('#formEquipe select[name="titulares"], #formEquipe select[name="reservas"]');
+    const capitao = document.getElementById('capitao_id');
+    const current = capitao.value;
+    capitao.innerHTML = '<option value="">Selecione o capitão</option>';
+    selects.forEach(s => {
+      if (s.value) {
+        const name = s.options[s.selectedIndex].text;
+        capitao.innerHTML += `<option value="${s.value}" ${s.value == current ? 'selected' : ''}>${name}</option>`;
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', carregarJogadores);
+</script>
+{% endblock %}

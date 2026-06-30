@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}{{ equipe.nome }} — IFPI Sports{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+  <div>
+    <a href="{{ url_for('equipes') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Voltar</a>
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900); line-height: 1;">{{ equipe.nome }}</h1>
+    <p style="color: var(--gray-500); margin-top: 0.5rem;">
+      <span class="badge badge-user" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">
+        {{ '⚽ Futsal' if equipe.modalidade == 'futsal' else '🏐 Vôlei' if equipe.modalidade == 'volei' else '🥊 X1' }}
+      </span>
+    </p>
+  </div>
+  
+  {% if session.get('role') in ['admin', 'dono'] %}
+  <div style="display: flex; gap: 0.8rem;">
+    <a href="{{ url_for('editar_equipe', equipe_id=equipe.id) }}" class="btn btn-primary">✏️ Editar Escalação</a>
+    <form method="POST" action="{{ url_for('excluir_equipe', equipe_id=equipe.id) }}" onsubmit="return confirm('Excluir esta equipe permanentemente?')">
+      <button type="submit" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);">🗑️</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+  <!-- INFO CARD -->
+  <div class="card">
+    <div class="card-header">
+      <h3 style="margin: 0;">📋 Visão Geral</h3>
+    </div>
+    <div class="card-body">
+      <div style="display: grid; gap: 1.5rem;">
+        <div>
+          <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--gray-400);">Capitão Responsável</label>
+          <p style="font-weight: 700; font-size: 1.1rem; color: var(--gray-800);">
+            {{ equipe.capitao_nome if equipe.modalidade != 'x1' else equipe.titulares[0].username }}
+          </p>
+        </div>
+        <div>
+          <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; color: var(--gray-400);">Total de Atletas</label>
+          <p style="font-weight: 700; font-size: 1.1rem; color: var(--gray-800);">{{ equipe.titulares|length + equipe.reservas|length }} Membros</p>
+        </div>
+        <div style="padding-top: 1.5rem; border-top: 1px solid var(--gray-100);">
+          <p style="font-size: 0.85rem; color: var(--gray-500); font-style: italic;">
+            Equipe registrada para competições oficiais do IFPI.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYERS CARD -->
+  <div class="card">
+    <div class="card-header">
+      <h3 style="margin: 0;">🏃 Elenco Atual</h3>
+    </div>
+    <div class="card-body">
+      <h4 style="color: var(--success); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></span>
+        Titulares ({{ equipe.titulares|length }})
+      </h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 3rem;">
+        {% for p in equipe.titulares %}
+        <div style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-sm); border-left: 4px solid var(--success); font-weight: 600; color: var(--gray-700);">
+          {{ p.username }}
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if equipe.reservas %}
+      <h4 style="color: var(--warning); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="width: 8px; height: 8px; background: var(--warning); border-radius: 50%;"></span>
+        Reservas ({{ equipe.reservas|length }})
+      </h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+        {% for p in equipe.reservas %}
+        <div style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-sm); border-left: 4px solid var(--warning); font-weight: 600; color: var(--gray-700);">
+          {{ p.username }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

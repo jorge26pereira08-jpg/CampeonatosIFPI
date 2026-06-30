@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}Gestão de Usuário — IFPI Sports{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h2 style="margin: 0;">👤 Gestão de Usuário</h2>
+    <a href="{{ url_for('admin_usuarios') }}" class="btn btn-outline">← Voltar</a>
+  </div>
+  
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('admin_editar_usuario', usuario_id=usuario.id) }}">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div class="form-group">
+          <label class="form-label">Nome de Usuário</label>
+          <input type="text" name="username" class="form-control" value="{{ usuario.username }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Função (Role)</label>
+          <select name="role" id="role_select" class="form-control" onchange="checkRoleChange()">
+            <option value="user" {% if usuario.role == 'user' %}selected{% endif %}>👤 Usuário Comum</option>
+            <option value="admin" {% if usuario.role == 'admin' %}selected{% endif %}>⭐ Administrador</option>
+            {% if usuario.role == 'dono' %}
+            <option value="dono" selected>👑 Dono do Sistema</option>
+            {% endif %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0.5rem;">
+        <label class="form-label">🔒 Nova Senha</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Digite a nova senha" required>
+        <small style="color: var(--gray-400); font-size: 0.78rem;">Deixe em branco para manter a senha atual — ou preencha para alterá-la.</small>
+      </div>
+
+      <!-- Medidor de Força de Senha -->
+      <div id="senha-requisitos" style="margin-bottom: 2rem; padding: 1rem; background: var(--gray-50); border: 1px solid var(--gray-100); border-radius: var(--radius-sm); font-size: 0.82rem; display: none;">
+        <p style="font-weight: 700; color: var(--gray-500); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.8px; margin-bottom: 0.75rem;">Requisitos da senha</p>
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem;">
+          <li id="req-len"   style="color: var(--gray-400);">✗ Mínimo de 8 caracteres</li>
+          <li id="req-upper" style="color: var(--gray-400);">✗ Ao menos uma letra maiúscula</li>
+          <li id="req-lower" style="color: var(--gray-400);">✗ Ao menos uma letra minúscula</li>
+          <li id="req-num"   style="color: var(--gray-400);">✗ Ao menos um número</li>
+          <li id="req-spec"  style="color: var(--gray-400);">✗ Ao menos um caractere especial (!@#$%^&* etc.)</li>
+        </ul>
+        <div style="margin-top: 0.9rem;">
+          <div style="height: 6px; background: var(--gray-200); border-radius: 99px; overflow: hidden;">
+            <div id="senha-barra" style="height: 100%; width: 0%; border-radius: 99px; transition: width 0.3s, background 0.3s;"></div>
+          </div>
+          <p id="senha-label" style="font-size: 0.78rem; margin-top: 0.4rem; color: var(--gray-400); font-weight: 600;"></p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div class="form-group">
+          <label class="form-label">Pergunta de Segurança</label>
+          <input type="text" name="pergunta_seguranca" class="form-control" value="{{ usuario.pergunta_seguranca or '' }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Resposta de Segurança</label>
+          <input type="text" name="resposta_seguranca" class="form-control" value="{{ usuario.resposta_seguranca or '' }}">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; padding: 1.5rem; background: var(--gray-50); border-radius: var(--radius-sm); border: 1px solid var(--gray-100);">
+        <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
+          <input type="checkbox" name="acesso_liberado" value="1" {% if usuario.acesso_liberado %}checked{% endif %} style="width: 20px; height: 20px;">
+          <span class="form-label" style="margin: 0;">🔓 Liberar Acesso (Resetar bloqueio por tentativas)</span>
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
+          <input type="checkbox" name="bloqueado" value="1" {% if usuario.bloqueado %}checked{% endif %} style="width: 20px; height: 20px;">
+          <span class="form-label" style="margin: 0; color: {% if usuario.bloqueado %}var(--danger){% else %}var(--gray-700){% endif %};">🚫 Bloquear Conta</span>
+        </label>
+      </div>
+
+      {% if usuario.bloqueado %}
+      <div style="padding: 1rem; background: #ffebee; border: 1px solid #ef5350; border-radius: var(--radius-sm); margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
+        <span style="font-size: 1.5rem;">⚠️</span>
+        <div>
+          <p style="font-weight: 700; color: #c62828; margin-bottom: 0.3rem;">Conta Bloqueada</p>
+          <p style="font-size: 0.9rem; color: #d32f2f; margin: 0;">Este usuário não conseguirá fazer login até que a conta seja desbloqueada.</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- CAMPO DE SENHA DO DONO (SÓ APARECE SE PROMOVER PARA ADMIN) -->
+      <div id="confirmacao_dono_section" style="display: none; margin-top: 2rem; padding: 1.5rem; background: #fffde7; border: 2px solid #fbc02d; border-radius: var(--radius-md);">
+        <h4 style="color: #f57f17; margin-bottom: 1rem;">⚠️ Confirmação Necessária</h4>
+        <p style="font-size: 0.9rem; margin-bottom: 1rem;">Para promover este usuário a <strong>Administrador</strong>, você deve inserir sua senha de <strong>Dono</strong> abaixo:</p>
+        <div class="form-group">
+          <label class="form-label">Sua Senha de Dono</label>
+          <input type="password" name="senha_confirmacao_dono" id="senha_confirmacao_dono" class="form-control" placeholder="Sua senha mestra">
+        </div>
+      </div>
+
+      <div style="margin-top: 3rem; display: flex; gap: 1rem;">
+        <button type="submit" class="btn btn-primary" style="flex: 2; padding: 1rem;">💾 Salvar Alterações</button>
+        {% if usuario.id != session.get('user_id') and usuario.role != 'dono' %}
+        <button type="button" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);" onclick="confirmarExclusao()">🗑️ Excluir Usuário</button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function checkRoleChange() {
+    var select = document.getElementById('role_select');
+    var section = document.getElementById('confirmacao_dono_section');
+    var input = document.getElementById('senha_confirmacao_dono');
+    var originalRole = "{{ usuario.role }}";
+    var currentRole = select.value;
+
+    if (currentRole === 'admin' && originalRole !== 'admin') {
+      section.style.display = 'block';
+      input.required = true;
+    } else {
+      section.style.display = 'none';
+      input.required = false;
+    }
+  }
+
+  function confirmarExclusao() {
+    if (confirm('Tem certeza que deseja excluir permanentemente o usuário {{ usuario.username }}? Esta ação não pode ser desfeita.')) {
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = "{{ url_for('excluir_usuario', usuario_id=usuario.id) }}";
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
+  // Medidor de força de senha
+  (function () {
+    var input = document.getElementById('password');
+    var painel = document.getElementById('senha-requisitos');
+    if (!input || !painel) return;
+
+    var reqs = {
+      len:   { el: document.getElementById('req-len'),   test: function(v){ return v.length >= 8; } },
+      upper: { el: document.getElementById('req-upper'), test: function(v){ return /[A-Z]/.test(v); } },
+      lower: { el: document.getElementById('req-lower'), test: function(v){ return /[a-z]/.test(v); } },
+      num:   { el: document.getElementById('req-num'),   test: function(v){ return /[0-9]/.test(v); } },
+      spec:  { el: document.getElementById('req-spec'),  test: function(v){ return /[!@#$%^&*()\-_=+\[\]{}|;:'",.<>?\/`~\\]/.test(v); } }
+    };
+
+    var barra = document.getElementById('senha-barra');
+    var label = document.getElementById('senha-label');
+    var cores  = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#16a34a'];
+    var labels = ['Muito fraca', 'Fraca', 'Razoável', 'Forte', 'Muito forte'];
+
+    input.addEventListener('input', function () {
+      var v = input.value;
+
+      // Mostrar/ocultar painel
+      painel.style.display = v.length > 0 ? 'block' : 'none';
+      // Tornar campo obrigatório somente se preenchido
+      input.required = v.length > 0;
+
+      var score = 0;
+      Object.keys(reqs).forEach(function(k) {
+        var ok = reqs[k].test(v);
+        if (ok) {
+          score++;
+          reqs[k].el.style.color = '#16a34a';
+          reqs[k].el.textContent = reqs[k].el.textContent.replace('✗', '✔');
+        } else {
+          reqs[k].el.style.color = 'var(--gray-400)';
+          reqs[k].el.textContent = reqs[k].el.textContent.replace('✔', '✗');
+        }
+      });
+      if (v.length === 0) { barra.style.width = '0%'; label.textContent = ''; return; }
+      var idx = Math.max(0, score - 1);
+      barra.style.width = (score * 20) + '%';
+      barra.style.background = cores[idx];
+      label.style.color = cores[idx];
+      label.textContent = labels[idx];
+    });
+  })();
+</script>
+{% endblock %}

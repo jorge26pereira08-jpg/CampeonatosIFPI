@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% block title %}Amistosos — IFPI Sports{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--gray-900);">⚽ Amistosos</h1>
+    <p style="color: var(--gray-500);">Desafios e partidas rápidas entre equipes</p>
+  </div>
+</div>
+
+<!-- CONVITES PENDENTES -->
+{% if convites_pendentes %}
+<div class="card" style="border-left: 5px solid var(--info);">
+  <div class="card-header" style="background: #e0f7fa;">
+    <h4 style="color: #00838f; margin: 0;">📬 Convites de Amistoso ({{ convites_pendentes|length }})</h4>
+  </div>
+  <div class="card-body">
+    {% for convite in convites_pendentes %}
+    <div style="padding: 1.5rem; background: var(--gray-50); border-radius: var(--radius-sm); border: 1px solid var(--gray-200); margin-bottom: 1rem;">
+      <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">
+        <strong>{{ convite.usuario_origem }}</strong> desafiou sua equipe <strong>{{ convite.equipe_destino }}</strong> para um amistoso contra <strong>{{ convite.equipe_origem }}</strong>.
+      </p>
+      
+      <form method="POST" action="{{ url_for('responder_convite', convite_id=convite.id, acao='aceitar') }}">
+        <input type="hidden" name="equipe_destino_id" value="{{ convite.equipe_destino_id }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="form-group">
+            <label class="form-label">Data Sugerida</label>
+            <input type="date" name="data" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Horário</label>
+            <input type="time" name="horario" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Local</label>
+            <input type="text" name="local" class="form-control" placeholder="Ex: Quadra Central" required>
+          </div>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <button type="submit" class="btn btn-primary">✅ Aceitar Desafio</button>
+          <button type="button" class="btn btn-outline" style="color: var(--danger);" onclick="recusarConvite({{ convite.id }})">Recusar</button>
+        </div>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- CRIAR AMISTOSO (ADMIN/DONO) -->
+{% if session.get('role') in ['admin', 'dono'] %}
+<div class="card">
+  <div class="card-header">
+    <h3 style="margin: 0;">➕ Agendar Novo Amistoso</h3>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        <div class="form-group">
+          <label class="form-label">Equipe 1</label>
+          <select name="time1_id" class="form-control" required>
+            <option value="">Selecione...</option>
+            {% for eq in equipes %}
+            <option value="{{ eq.id }}">{{ eq.nome }} ({{ eq.modalidade|upper }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Equipe 2</label>
+          <select name="time2_id" class="form-control" required>
+            <option value="">Selecione...</option>
+            {% for eq in equipes %}
+            <option value="{{ eq.id }}">{{ eq.nome }} ({{ eq.modalidade|upper }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modalidade</label>
+          <select name="modalidade" class="form-control" required>
+            <option value="futsal">⚽ Futsal</option>
+            <option value="volei">🏐 Vôlei</option>
+            <option value="x1">🥊 X1</option>
+          </select>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1.5rem; margin-top: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input type="date" name="data" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horário</label>
+          <input type="time" name="horario" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Local</label>
+          <input type="text" name="local" class="form-control" placeholder="Local da partida" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">📅 Agendar Amistoso</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- ENVIAR CONVITES (CAPITÃES) -->
+{% if minhas_equipes %}
+<div class="card">
+  <div class="card-header">
+    <h3 style="margin: 0;">💬 Desafiar Outra Equipe</h3>
+  </div>
+  <div class="card-body">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+      {% for minha_eq in minhas_equipes %}
+      <div class="card" style="margin-bottom: 0; background: var(--gray-50);">
+        <div class="card-body" style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">{{ get_emoji_modalidade(minha_eq.modalidade) }}</div>
+          <h4 style="margin-bottom: 0.5rem;">{{ minha_eq.nome }}</h4>
+          <p class="badge badge-user" style="margin-bottom: 1.5rem;">{{ minha_eq.modalidade|upper }}</p>
+          <button type="button" class="btn btn-primary btn-block" style="width: 100%;" onclick="abrirModalConvite({{ minha_eq.id }}, '{{ minha_eq.nome }}', '{{ minha_eq.modalidade }}')">Enviar Desafio</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- LISTA DE AMISTOSOS -->
+<h2 style="margin: 3rem 0 1.5rem; font-weight: 800;">📋 Partidas Agendadas</h2>
+
+{% if amistosos %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;">
+  {% for am in amistosos %}
+  <div class="card" style="{% if am.status == 'concluído' %}border-top: 4px solid var(--success);{% else %}border-top: 4px solid var(--info);{% endif %}">
+    <div class="card-body">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <span class="badge badge-user">{{ am.modalidade|upper }}</span>
+        <span class="badge badge-{{ 'success' if am.status == 'concluído' else 'user' }}">
+          {{ 'Finalizado' if am.status == 'concluído' else 'Agendado' }}
+        </span>
+      </div>
+
+      <div style="display: flex; justify-content: space-around; align-items: center; text-align: center; margin-bottom: 2rem;">
+        <div style="flex: 1;">
+          <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">{{ am.time1 }}</h4>
+          {% if am.status == 'concluído' %}
+          <div style="font-size: 2rem; font-weight: 900; color: var(--dono-blue);">{{ am.placar_time1 }}</div>
+          {% endif %}
+        </div>
+        <div style="font-weight: 800; color: var(--gray-300); padding: 0 1rem;">VS</div>
+        <div style="flex: 1;">
+          <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">{{ am.time2 }}</h4>
+          {% if am.status == 'concluído' %}
+          <div style="font-size: 2rem; font-weight: 900; color: var(--dono-blue);">{{ am.placar_time2 }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="font-size: 0.9rem; color: var(--gray-600); background: var(--gray-50); padding: 1rem; border-radius: var(--radius-sm);">
+        <p>📅 {{ am.data }} às {{ am.horario }}</p>
+        <p>📍 {{ am.local }}</p>
+        {% if am.wo %}
+        <p style="margin-top: 0.5rem; color: var(--wo-color); font-weight: 700;">🚨 Vitória por WO: {{ am.motivo_wo }}</p>
+        {% elif am.artilheiro %}
+        <p style="margin-top: 0.5rem;">⚽ Artilheiro: <strong>{{ am.artilheiro }}</strong></p>
+        {% endif %}
+      </div>
+
+      {% if session.get('role') in ['admin', 'dono'] %}
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+        {% if am.status == 'aberto' %}
+        <a href="{{ url_for('concluir_amistoso', amistoso_id=am.id) }}" class="btn btn-primary" style="flex: 1; font-size: 0.8rem;">Concluir</a>
+        {% endif %}
+        <form method="POST" action="{{ url_for('cancelar_amistoso', amistoso_id=am.id) }}" style="flex: 1;">
+          <button type="submit" class="btn btn-outline" style="width: 100%; font-size: 0.8rem; color: var(--danger);" onclick="return confirm('Cancelar este amistoso?')">Cancelar</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 4rem 2rem;">
+  <div style="font-size: 4rem; margin-bottom: 1rem;">🏟️</div>
+  <h3>Nenhum amistoso no momento</h3>
+  <p style="color: var(--gray-500);">Aguarde novos desafios ou agende uma partida!</p>
+</div>
+{% endif %}
+
+<!-- MODAIS DE CONVITE -->
+<div class="modal-overlay" id="modalConvite">
+  <div class="modal-box">
+    <h3 id="modalTitle">Desafiar Equipe</h3>
+    <p id="modalSub" style="margin-bottom: 1.5rem; color: var(--gray-500);"></p>
+    <form method="POST" id="formConvite">
+      <div class="form-group">
+        <label class="form-label">Selecione o Capitão Adversário</label>
+        <select name="usuario_destino_id" id="usuario_select" class="form-control" required>
+          <option value="">Carregando...</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button type="submit" class="btn btn-primary" style="flex: 2;">Enviar Convite</button>
+        <button type="button" class="btn btn-outline" style="flex: 1;" onclick="fecharModal()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  async function abrirModalConvite(equipeId, equipeNome, modalidade) {
+    const modal = document.getElementById('modalConvite');
+    const title = document.getElementById('modalTitle');
+    const sub = document.getElementById('modalSub');
+    const select = document.getElementById('usuario_select');
+    const form = document.getElementById('formConvite');
+
+    title.innerText = `Desafiar com ${equipeNome}`;
+    sub.innerText = `Buscando oponentes de ${modalidade.toUpperCase()}...`;
+    modal.classList.add('active');
+
+    try {
+      const response = await fetch(`/amistosos/usuarios-modalidade/${equipeId}`);
+      const usuarios = await response.json();
+      
+      select.innerHTML = '<option value="">Selecione o oponente</option>';
+      usuarios.forEach(u => {
+        select.innerHTML += `<option value="${u.id}">${u.username}</option>`;
+      });
+
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const userId = select.value;
+        if (!userId) return alert('Selecione um oponente!');
+        form.action = `/amistosos/convidar/${userId}/${equipeId}`;
+        form.submit();
+      };
+    } catch (e) {
+      alert('Erro ao carregar oponentes.');
+    }
+  }
+
+  function fecharModal() {
+    document.getElementById('modalConvite').classList.remove('active');
+  }
+
+  function recusarConvite(id) {
+    if (confirm('Deseja recusar este convite?')) {
+      const f = document.createElement('form');
+      f.method = 'POST';
+      f.action = `/amistosos/responder-convite/${id}/recusar`;
+      document.body.appendChild(f);
+      f.submit();
+    }
+  }
+</script>
+
+<style>
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box { background: white; padding: 2.5rem; border-radius: var(--radius-lg); width: 100%; max-width: 450px; }
+</style>
+{% endblock %}

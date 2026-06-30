@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}{{ campeonato.nome }} — IFPI Sports{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <a href="{{ url_for('campeonatos') }}" class="btn btn-outline" style="margin-bottom: 1rem;">← Voltar</a>
+  <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+      <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900);">🏆 {{ campeonato.nome }}</h1>
+      <p style="color: var(--gray-500); font-size: 1.1rem;">📅 {{ campeonato.data }} às {{ campeonato.horario }} | 📍 {{ campeonato.local }}</p>
+    </div>
+    <span class="badge badge-{{ 'success' if campeonato.status == 'aberto' else 'user' }}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+      {{ 'Em Andamento' if campeonato.status == 'aberto' else 'Finalizado' }}
+    </span>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+  
+  <!-- COLUNA PRINCIPAL: CHAVEAMENTO -->
+  <div>
+    {% if partidas %}
+    <div class="card">
+      <div class="card-header">
+        <h3 style="margin: 0;">🏆 Chaveamento do Torneio</h3>
+      </div>
+      <div class="card-body">
+        {% set fases = ['quartas', 'semi', 'final'] %}
+        {% for fase in fases %}
+          {% set partidas_fase = partidas | selectattr('fase', 'equalto', fase) | list %}
+          {% if partidas_fase %}
+          <div style="margin-bottom: 3rem;">
+            <h4 style="color: var(--ifpi-green); border-bottom: 2px solid var(--gray-100); padding-bottom: 0.5rem; margin-bottom: 1.5rem; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1.5px; font-weight: 800;">
+              {% if fase == 'quartas' %}🥊 Quartas de Final{% elif fase == 'semi' %}🥈 Semifinais{% elif fase == 'final' %}🔥 Grande Final{% endif %}
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+              {% for partida in partidas_fase %}
+              <div class="card" style="margin-bottom: 0; {% if partida.vencedor_id %}border-color: var(--success);{% endif %}">
+                <div style="padding: 1rem; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 0.7rem; font-weight: 800; color: var(--gray-500);">JOGO #{{ partida.numero_partida }}</span>
+                  {% if partida.wo %}
+                  <span class="badge badge-wo" style="font-size: 0.6rem;">WO</span>
+                  {% endif %}
+                </div>
+                <div style="padding: 1.25rem;">
+                  <!-- EQUIPE 1 -->
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                    <span style="font-weight: {{ '800' if partida.vencedor_id == partida.equipe1_id else '500' }}; color: {{ 'var(--success)' if partida.vencedor_id == partida.equipe1_id else 'inherit' }};">
+                      {{ partida.equipe1_nome }}
+                    </span>
+                    <span style="font-weight: 900; font-size: 1.2rem;">{{ partida.placar_equipe1 if partida.status == 'concluído' else '-' }}</span>
+                  </div>
+                  
+                  {% if partida.equipe2_id %}
+                  <!-- EQUIPE 2 -->
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: {{ '800' if partida.vencedor_id == partida.equipe2_id else '500' }}; color: {{ 'var(--success)' if partida.vencedor_id == partida.equipe2_id else 'inherit' }};">
+                      {{ partida.equipe2_nome }}
+                    </span>
+                    <span style="font-weight: 900; font-size: 1.2rem;">{{ partida.placar_equipe2 if partida.status == 'concluído' else '-' }}</span>
+                  </div>
+                  {% else %}
+                  <div style="margin-top: 0.5rem; padding: 0.4rem; background: #fffde7; border-radius: 4px; font-size: 0.75rem; color: #f57f17; font-weight: 700; text-align: center;">
+                    ⚡ PASSOU DIRETO (BYE)
+                  </div>
+                  {% endif %}
+
+                  {% if session.get('role') in ['admin', 'dono'] and partida.equipe2_id %}
+                  <a href="{{ url_for('gerenciar_partida', campeonato_id=campeonato.id, partida_id=partida.id) }}" class="btn btn-outline" style="width: 100%; margin-top: 1.25rem; font-size: 0.75rem; padding: 0.4rem;">
+                    ⚙️ Gerenciar Partida
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 4rem 2rem;">
+      <div style="font-size: 4rem; margin-bottom: 1rem;">🕒</div>
+      <h3>Aguardando Chaveamento</h3>
+      <p style="color: var(--gray-500);">O administrador gerará as partidas assim que as inscrições terminarem.</p>
+      {% if session.get('role') in ['admin', 'dono'] and participantes|length >= 4 %}
+      <form method="POST" action="{{ url_for('gerar_chaveamento', campeonato_id=campeonato.id) }}" style="margin-top: 2rem;">
+        <button type="submit" class="btn btn-primary">🎯 Gerar Chaveamento Agora</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- LATERAL: INFO E AÇÕES -->
+  <div>
+    <!-- RESULTADO FINAL -->
+    {% if campeonato.status == 'concluído' %}
+    <div class="card" style="background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%); border: none;">
+      <div class="card-body" style="text-align: center; color: #5d4037;">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🥇</div>
+        <h4 style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; font-weight: 800; margin-bottom: 1rem;">Grande Campeão</h4>
+        {% set campeao = participantes|selectattr('id', 'equalto', campeonato.campeao_id)|first %}
+        <h2 style="font-weight: 900; margin-bottom: 1.5rem;">{{ campeao.nome if campeao else 'N/A' }}</h2>
+        
+        <div style="border-top: 1px solid rgba(0,0,0,0.1); padding-top: 1rem; display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700;">
+          <span>🥈 VICE:</span>
+          {% set vice = participantes|selectattr('id', 'equalto', campeonato.vice_id)|first %}
+          <span>{{ vice.nome if vice else 'N/A' }}</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- GESTÃO DE EQUIPES -->
+    <div class="card">
+      <div class="card-header">
+        <h4 style="margin: 0;">👥 Participantes ({{ participantes|length }})</h4>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <ul style="list-style: none;">
+          {% for eq in participantes %}
+          <li style="padding: 1rem; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600;">{{ eq.nome }}</span>
+            {% if session.get('role') in ['admin', 'dono'] and campeonato.status == 'aberto' %}
+            <form method="POST" action="{{ url_for('remover_equipe_campeonato', campeonato_id=campeonato.id, equipe_id=eq.id) }}">
+              <button type="submit" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.1rem;" onclick="return confirm('Remover {{ eq.nome }}?')">🗑️</button>
+            </form>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        
+        {% if session.get('role') in ['admin', 'dono'] and campeonato.status == 'aberto' and participantes|length < campeonato.qtd_equipes %}
+        <div style="padding: 1.5rem; background: var(--gray-50);">
+          <form method="POST" action="{{ url_for('adicionar_equipe_campeonato', campeonato_id=campeonato.id) }}">
+            <select name="equipe_id" class="form-control" style="margin-bottom: 1rem;" required>
+              <option value="">Adicionar Equipe...</option>
+              {% for eq in equipes_disponiveis %}
+              <option value="{{ eq.id }}">{{ eq.nome }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Adicionar</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- AÇÕES ADMIN -->
+    {% if session.get('role') in ['admin', 'dono'] and campeonato.status == 'aberto' and partidas %}
+    <div class="card" style="border-top: 4px solid var(--warning);">
+      <div class="card-body">
+        <h4 style="margin-bottom: 1.5rem;">⚡ Controle de Fases</h4>
+        
+        {% set fases_com_partidas = partidas | map(attribute='fase') | unique | list %}
+        {% set fase_atual = fases_com_partidas[-1] if fases_com_partidas else 'quartas' %}
+        {% set partidas_fase_atual = partidas | selectattr('fase', 'equalto', fase_atual) | list %}
+        {% set todas_concluidas = (partidas_fase_atual | selectattr('status', 'equalto', 'concluído') | list | length) == (partidas_fase_atual | length) %}
+        
+        {% if todas_concluidas and fase_atual != 'final' %}
+        <form method="POST" action="{{ url_for('avancar_fase', campeonato_id=campeonato.id) }}">
+          <input type="hidden" name="fase_atual" value="{{ fase_atual }}">
+          <button type="submit" class="btn btn-warning" style="width: 100%; padding: 1rem; font-weight: 800;">⬆️ AVANÇAR PARA {{ 'SEMIFINAL' if fase_atual == 'quartas' else 'FINAL' }}</button>
+        </form>
+        {% else %}
+        <p style="font-size: 0.85rem; color: var(--gray-500); text-align: center; font-style: italic;">
+          {% if fase_atual == 'final' %}
+          Aguardando o resultado da Final.
+          {% else %}
+          Conclua todas as partidas das {{ fase_atual }} para avançar.
+          {% endif %}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

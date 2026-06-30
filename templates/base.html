@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}IFPI Sports{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+  <style>
+    /* Ajustes específicos para o layout mestre */
+    .alerts-container {
+      max-width: 1200px;
+      margin: 1rem auto;
+      padding: 0 1.5rem;
+    }
+  </style>
+</head>
+<body class="{% if session.get('role') == 'admin' %}admin-theme{% elif session.get('role') == 'dono' %}dono-theme{% endif %}">
+
+  {% if not is_auth_page %}
+  <nav class="navbar navbar-{{ session.get('role', 'user') }}">
+    <a href="{{ url_for('index') }}" class="navbar-brand">
+      <span style="font-size: 1.8rem;">🏆</span>
+      <span>IFPI Sports</span>
+    </a>
+
+    <div class="navbar-nav">
+      <a href="{{ url_for('index') }}" class="nav-link">Página inicial</a>
+      <a href="{{ url_for('equipes') }}" class="nav-link">Equipes</a>
+      <a href="{{ url_for('amistosos') }}" class="nav-link">Amistosos</a>
+      <a href="{{ url_for('campeonatos') }}" class="nav-link">Campeonatos</a>
+      {% if session.get('role') in ['admin', 'dono'] %}
+      <a href="{{ url_for('admin_usuarios') }}" class="nav-link">Gestão</a>
+      {% endif %}
+    </div>
+
+    <div class="navbar-nav">
+      {% if 'user_id' in session %}
+      <div style="text-align: right; margin-right: 1rem; line-height: 1.2;">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--gray-900);">{{ session.get('username') }}</div>
+        <div class="badge badge-{{ session.get('role') }}" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">{{ session.get('role')|upper }}</div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem;">Sair</a>
+      {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-primary">Entrar</a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- FLASH MESSAGES -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alerts-container">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{% if category == 'success' %}✅{% elif category == 'danger' %}❌{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}</span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="{% if not is_auth_page %}main-content{% endif %}">
+    {% block content %}{% endblock %}
+  </div>
+
+</body>
+</html>

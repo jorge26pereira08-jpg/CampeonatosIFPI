@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Cadastrar-se — IFPI Sports{% endblock %}
+
+{% block auth_content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+      <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--gray-900);">Criar Nova Conta</h1>
+      <p style="color: var(--gray-500);">Junte-se à comunidade esportiva do IFPI</p>
+    </div>
+
+    <div class="auth-card-body">
+      <form method="POST">
+        <div class="form-group">
+          <label class="form-label">👤 Nome de Usuário</label>
+          <input type="text" name="username" class="form-control" placeholder="Como quer ser chamado?" required autofocus>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0.5rem;">
+          <label class="form-label">🔒 Senha</label>
+          <input type="password" id="password" name="password" class="form-control" placeholder="Defina uma senha segura" required>
+        </div>
+
+        <!-- Medidor de Força de Senha -->
+        <div id="senha-requisitos" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--gray-50); border: 1px solid var(--gray-100); border-radius: var(--radius-sm); font-size: 0.82rem;">
+          <p style="font-weight: 700; color: var(--gray-500); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.8px; margin-bottom: 0.75rem;">Requisitos da senha</p>
+          <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem;">
+            <li id="req-len"   style="color: var(--gray-400);">✗ Mínimo de 8 caracteres</li>
+            <li id="req-upper" style="color: var(--gray-400);">✗ Ao menos uma letra maiúscula</li>
+            <li id="req-lower" style="color: var(--gray-400);">✗ Ao menos uma letra minúscula</li>
+            <li id="req-num"   style="color: var(--gray-400);">✗ Ao menos um número</li>
+            <li id="req-spec"  style="color: var(--gray-400);">✗ Ao menos um caractere especial (!@#$%^&* etc.)</li>
+          </ul>
+          <div style="margin-top: 0.9rem;">
+            <div style="height: 6px; background: var(--gray-200); border-radius: 99px; overflow: hidden;">
+              <div id="senha-barra" style="height: 100%; width: 0%; border-radius: 99px; transition: width 0.3s, background 0.3s;"></div>
+            </div>
+            <p id="senha-label" style="font-size: 0.78rem; margin-top: 0.4rem; color: var(--gray-400); font-weight: 600;"></p>
+          </div>
+        </div>
+
+        <div style="padding: 1.5rem; background: var(--gray-50); border-radius: var(--radius-sm); border: 1px solid var(--gray-100); margin-bottom: 2rem;">
+          <p style="font-size: 0.75rem; font-weight: 800; color: var(--gray-400); text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 1px;">🛡️ Recuperação de Conta</p>
+          
+          <div class="form-group">
+            <label class="form-label">Pergunta Secreta</label>
+            <input type="text" name="pergunta_seguranca" class="form-control" placeholder="Ex: Qual o nome do seu primeiro pet?" required>
+          </div>
+          
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Resposta</label>
+            <input type="text" name="resposta_seguranca" class="form-control" placeholder="Sua resposta confidencial" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-weight: 700; font-size: 1.1rem;">🚀 Criar minha conta</button>
+      </form>
+    </div>
+
+    <div class="auth-card-footer">
+      Já faz parte? <a href="{{ url_for('login') }}" style="color: var(--success); font-weight: 700;">Faça Login</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var input = document.getElementById('password');
+  if (!input) return;
+
+  var reqs = {
+    len:   { el: document.getElementById('req-len'),   test: function(v){ return v.length >= 8; } },
+    upper: { el: document.getElementById('req-upper'), test: function(v){ return /[A-Z]/.test(v); } },
+    lower: { el: document.getElementById('req-lower'), test: function(v){ return /[a-z]/.test(v); } },
+    num:   { el: document.getElementById('req-num'),   test: function(v){ return /[0-9]/.test(v); } },
+    spec:  { el: document.getElementById('req-spec'),  test: function(v){ return /[!@#$%^&*()\-_=+\[\]{}|;:'",.<>?\/`~\\]/.test(v); } }
+  };
+
+  var barra = document.getElementById('senha-barra');
+  var label = document.getElementById('senha-label');
+  var cores  = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#16a34a'];
+  var labels = ['Muito fraca', 'Fraca', 'Razoável', 'Forte', 'Muito forte'];
+
+  input.addEventListener('input', function () {
+    var v = input.value;
+    var score = 0;
+    Object.keys(reqs).forEach(function(k) {
+      var ok = reqs[k].test(v);
+      if (ok) {
+        score++;
+        reqs[k].el.style.color = '#16a34a';
+        reqs[k].el.textContent = reqs[k].el.textContent.replace('✗', '✔');
+      } else {
+        reqs[k].el.style.color = 'var(--gray-400)';
+        reqs[k].el.textContent = reqs[k].el.textContent.replace('✔', '✗');
+      }
+    });
+    if (v.length === 0) { barra.style.width = '0%'; label.textContent = ''; return; }
+    var idx = Math.max(0, score - 1);
+    barra.style.width = (score * 20) + '%';
+    barra.style.background = cores[idx];
+    label.style.color = cores[idx];
+    label.textContent = labels[idx];
+  });
+})();
+</script>
+{% endblock %}

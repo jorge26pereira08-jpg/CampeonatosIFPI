@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Gerenciar Partida — IFPI Sports{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h2 style="margin: 0;">⚽ Gerenciar Partida</h2>
+    <span class="badge badge-{{ 'success' if partida.status == 'aberto' else 'user' }}">
+      {{ 'Em Aberto' if partida.status == 'aberto' else 'Concluída' }}
+    </span>
+  </div>
+  
+  <div class="card-body">
+    <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 3rem; text-align: center;">
+      <div style="flex: 1;">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🛡️</div>
+        <h3 style="font-size: 1.5rem; color: var(--dono-blue);">{{ partida.equipe1_nome }}</h3>
+        <p class="badge badge-user">Equipe 1</p>
+      </div>
+
+      {% if partida.equipe2_id %}
+      <div style="padding: 0 2rem;">
+        <div style="font-size: 1.2rem; font-weight: 800; color: var(--gray-300);">VS</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 1px;">{{ partida.fase }}</div>
+      </div>
+
+      <div style="flex: 1;">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚔️</div>
+        <h3 style="font-size: 1.5rem; color: var(--dono-blue);">{{ partida.equipe2_nome }}</h3>
+        <p class="badge badge-user">Equipe 2</p>
+      </div>
+      {% else %}
+      <div style="flex: 1; background: var(--gray-100); padding: 2rem; border-radius: var(--radius-md); border: 2px dashed var(--gray-300);">
+        <p style="color: var(--gray-500); font-weight: 600;">Esta equipe passou direto para a próxima fase (Bye)</p>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if partida.status == 'aberto' %}
+    <form method="POST" id="form_partida">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div class="form-group">
+          <label class="form-label">Gols: {{ partida.equipe1_nome }}</label>
+          <input type="number" name="placar_equipe1" id="placar_equipe1" class="form-control" min="0" value="0" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gols: {{ partida.equipe2_nome }}</label>
+          <input type="number" name="placar_equipe2" id="placar_equipe2" class="form-control" min="0" value="0" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">⚽ Artilheiro da Partida</label>
+        <input type="text" name="artilheiro" id="artilheiro" class="form-control" placeholder="Nome do jogador que marcou mais gols">
+      </div>
+
+      <!-- SEÇÃO WO -->
+      <div class="wo-section" style="margin-top: 2rem; padding: 1.5rem; border-radius: var(--radius-md);">
+        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;">
+          <input type="checkbox" name="wo" id="check_wo" value="1" style="width: 20px; height: 20px;" onchange="toggleWO()">
+          <label for="check_wo" style="font-weight: 700; color: var(--wo-color); cursor: pointer;">🚨 Registrar Vitória por WO</label>
+        </div>
+
+        <div id="wo_fields" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">🏆 Vencedor do WO</label>
+            <select name="vencedor_id_wo" id="vencedor_id_wo" class="form-control">
+              <option value="">Selecione quem venceu</option>
+              <option value="{{ partida.equipe1_id }}">{{ partida.equipe1_nome }}</option>
+              {% if partida.equipe2_id %}
+              <option value="{{ partida.equipe2_id }}">{{ partida.equipe2_nome }}</option>
+              {% endif %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">📝 Justificativa do WO</label>
+            <textarea name="motivo_wo" id="motivo_wo" class="form-control" rows="2" placeholder="Descreva por que a partida foi decidida por WO..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 3rem; display: flex; gap: 1rem;">
+        <button type="submit" class="btn btn-primary" style="flex: 2; padding: 1rem;">💾 Salvar Resultado Final</button>
+        <a href="{{ url_for('detalhes_campeonato', campeonato_id=partida.campeonato_id) }}" class="btn btn-outline" style="flex: 1;">Cancelar</a>
+      </div>
+    </form>
+    {% else %}
+    <!-- RESULTADO CONCLUÍDO -->
+    <div style="background: var(--gray-50); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--gray-200);">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h4 style="color: var(--gray-500); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 1rem;">Resultado Final</h4>
+        <div style="font-size: 4rem; font-weight: 900; color: var(--dono-blue); display: flex; justify-content: center; align-items: center; gap: 2rem;">
+          <span>{{ partida.placar_equipe1 }}</span>
+          <span style="font-size: 1.5rem; color: var(--gray-300);">X</span>
+          <span>{{ partida.placar_equipe2 }}</span>
+        </div>
+        
+        {% if partida.wo %}
+        <div style="margin-top: 1rem;">
+          <span class="badge badge-wo">Vitória por WO</span>
+          <p style="margin-top: 0.5rem; font-style: italic; color: var(--gray-600);">"{{ partida.motivo_wo }}"</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; border-top: 1px solid var(--gray-200); padding-top: 2rem;">
+        <div>
+          <p style="font-size: 0.85rem; color: var(--gray-500); margin-bottom: 0.5rem;">🏆 Vencedor</p>
+          <h5 style="font-size: 1.1rem; color: var(--success);">
+            {{ partida.equipe1_nome if partida.vencedor_id == partida.equipe1_id else partida.equipe2_nome }}
+          </h5>
+        </div>
+        {% if partida.artilheiro %}
+        <div>
+          <p style="font-size: 0.85rem; color: var(--gray-500); margin-bottom: 0.5rem;">⚽ Artilheiro</p>
+          <h5 style="font-size: 1.1rem; color: var(--gray-900);">{{ partida.artilheiro }}</h5>
+        </div>
+        {% endif %}
+      </div>
+      
+      <div style="margin-top: 2rem; text-align: center;">
+        <a href="{{ url_for('detalhes_campeonato', campeonato_id=partida.campeonato_id) }}" class="btn btn-outline">← Voltar ao Campeonato</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  function toggleWO() {
+    const isWO = document.getElementById('check_wo').checked;
+    const woFields = document.getElementById('wo_fields');
+    const placar1 = document.getElementById('placar_equipe1');
+    const placar2 = document.getElementById('placar_equipe2');
+    const artilheiro = document.getElementById('artilheiro');
+    const vencedorWO = document.getElementById('vencedor_id_wo');
+    const motivoWO = document.getElementById('motivo_wo');
+
+    woFields.style.display = isWO ? 'block' : 'none';
+    placar1.disabled = isWO;
+    placar2.disabled = isWO;
+    if (artilheiro) artilheiro.disabled = isWO;
+    
+    vencedorWO.required = isWO;
+    motivoWO.required = isWO;
+
+    if (isWO) {
+      placar1.value = 0;
+      placar2.value = 0;
+    }
+  }
+</script>
+{% endblock %}
